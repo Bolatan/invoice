@@ -31,7 +31,7 @@ export function Sidebar() {
   return (
     <div className="flex flex-col w-64 bg-slate-900 text-white min-h-screen">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-blue-400">Zoho Clone</h1>
+        <h1 className="text-2xl font-bold text-blue-400">Invoicing App</h1>
       </div>
       <nav className="flex-1 px-4 space-y-1">
         {navigation.map((item) => {

@@ -11,9 +11,9 @@ const transporter = nodemailer.createTransport({
 
 export async function sendInvoiceEmail(to: string, invoiceNumber: string, amount: number) {
   const mailOptions = {
-    from: '"Zoho Clone" <noreply@example.com>',
+    from: '"Invoicing App" <noreply@example.com>',
     to,
-    subject: `Invoice ${invoiceNumber} from Zoho Clone`,
+    subject: `Invoice ${invoiceNumber} from Invoicing App`,
     text: `Hello, your invoice ${invoiceNumber} for ₦${amount.toLocaleString()} is ready.`,
     html: `<p>Hello, your invoice <b>${invoiceNumber}</b> for <b>₦${amount.toLocaleString()}</b> is ready.</p>`,
   };
