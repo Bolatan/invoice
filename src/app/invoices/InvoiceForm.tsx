@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Plus, Trash2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 const invoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Invoice number is required"),
@@ -176,7 +177,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
                   <Input {...register(`items.${index}.rate` as const, { valueAsNumber: true })} type="number" placeholder="Rate" />
                 </div>
                 <div className="col-span-1 text-sm py-2 font-medium">
-                  ${(watch(`items.${index}.amount`) || 0).toFixed(2)}
+                  {formatCurrency(watch(`items.${index}.amount`) || 0)}
                 </div>
                 <div className="col-span-1">
                   <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>

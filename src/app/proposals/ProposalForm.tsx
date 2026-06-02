@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Plus, Trash2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 const proposalSchema = z.object({
   proposalNumber: z.string().min(1, "Required"),
@@ -103,8 +104,9 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
             <div className="flex justify-between items-center text-sm font-semibold">Items</div>
             {fields.map((field, index) => (
               <div key={field.id} className="grid grid-cols-12 gap-2">
-                <div className="col-span-8"><Input {...register(`items.${index}.description` as const)} placeholder="Description" /></div>
-                <div className="col-span-3"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" placeholder="Amount" /></div>
+                <div className="col-span-6"><Input {...register(`items.${index}.description` as const)} placeholder="Description" /></div>
+                <div className="col-span-2"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" placeholder="Amount" /></div>
+                <div className="col-span-3 text-sm py-2 font-medium">{formatCurrency(watch(`items.${index}.amount`) || 0)}</div>
                 <div className="col-span-1"><Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button></div>
               </div>
             ))}
