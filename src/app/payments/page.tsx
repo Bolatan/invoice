@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Plus, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import jsPDF from "jspdf";
+import { formatCurrency, CURRENCY_SYMBOL } from "@/lib/utils";
 
 interface Payment {
   _id: string;
@@ -45,7 +46,7 @@ export default function PaymentsPage() {
     doc.text(`Receipt Number: ${payment.paymentNumber}`, 14, 40);
     doc.text(`Date: ${new Date(payment.date).toLocaleDateString()}`, 14, 50);
     doc.text(`Received From: ${payment.customerId.name}`, 14, 60);
-    doc.text(`Amount Received: $${payment.amount.toFixed(2)}`, 14, 70);
+    doc.text(`Amount Received: ${CURRENCY_SYMBOL}${payment.amount.toFixed(2)}`, 14, 70);
     doc.text(`Payment Mode: ${payment.paymentMode}`, 14, 80);
     if (payment.reference) {
       doc.text(`Reference: ${payment.reference}`, 14, 90);
@@ -99,7 +100,7 @@ export default function PaymentsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{payment.customerId.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{payment.paymentMode.replace('_', ' ')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
-                    ${payment.amount.toFixed(2)}
+                    {formatCurrency(payment.amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Button variant="ghost" size="sm" onClick={() => generateReceipt(payment)}>

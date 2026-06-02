@@ -14,8 +14,8 @@ export async function sendInvoiceEmail(to: string, invoiceNumber: string, amount
     from: '"Zoho Clone" <noreply@example.com>',
     to,
     subject: `Invoice ${invoiceNumber} from Zoho Clone`,
-    text: `Hello, your invoice ${invoiceNumber} for $${amount} is ready.`,
-    html: `<p>Hello, your invoice <b>${invoiceNumber}</b> for <b>$${amount}</b> is ready.</p>`,
+    text: `Hello, your invoice ${invoiceNumber} for ₦${amount.toLocaleString()} is ready.`,
+    html: `<p>Hello, your invoice <b>${invoiceNumber}</b> for <b>₦${amount.toLocaleString()}</b> is ready.</p>`,
   };
 
   return transporter.sendMail(mailOptions);

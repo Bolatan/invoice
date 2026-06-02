@@ -13,6 +13,7 @@ import {
   Pie,
   Cell
 } from "recharts";
+import { formatCurrency } from "@/lib/utils";
 
 const data = [
   { name: 'Jan', revenue: 4000, expenses: 2400 },
@@ -47,8 +48,8 @@ export default function ReportsPage() {
               <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+                <YAxis tickFormatter={(value) => `₦${value}`} />
+                <Tooltip formatter={(value: any) => [formatCurrency(Number(value))]} />
                 <Bar dataKey="revenue" fill="#3b82f6" />
                 <Bar dataKey="expenses" fill="#ef4444" />
               </BarChart>
@@ -75,7 +76,7 @@ export default function ReportsPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value: any) => [formatCurrency(Number(value))]} />
               </PieChart>
             </ResponsiveContainer>
           </div>

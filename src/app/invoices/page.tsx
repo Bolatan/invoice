@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { InvoiceForm } from "./InvoiceForm";
+import { formatCurrency, CURRENCY_SYMBOL } from "@/lib/utils";
 
 interface Invoice {
   _id: string;
@@ -50,8 +51,8 @@ export default function InvoicesPage() {
     const tableData = invoice.items.map(item => [
       item.description,
       item.quantity,
-      `$${item.rate.toFixed(2)}`,
-      `$${item.amount.toFixed(2)}`
+      `${CURRENCY_SYMBOL}${item.rate.toFixed(2)}`,
+      `${CURRENCY_SYMBOL}${item.amount.toFixed(2)}`
     ]);
 
     autoTable(doc, {
@@ -61,7 +62,7 @@ export default function InvoicesPage() {
     });
 
     const finalY = (doc as any).lastAutoTable.finalY || 150;
-    doc.text(`Total: $${invoice.total.toFixed(2)}`, 14, finalY + 10);
+    doc.text(`Total: ${CURRENCY_SYMBOL}${invoice.total.toFixed(2)}`, 14, finalY + 10);
     doc.save(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
@@ -115,7 +116,7 @@ export default function InvoicesPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
-                    ${invoice.total.toFixed(2)}
+                    {formatCurrency(invoice.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <Button variant="ghost" size="sm" onClick={() => generatePDF(invoice)}>

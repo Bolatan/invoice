@@ -16,12 +16,13 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import { formatCurrency } from "@/lib/utils";
 
 const stats = [
   { name: 'Total Customers', value: '128', icon: Users, change: '+4.75%', changeType: 'positive' },
-  { name: 'Pending Invoices', value: '$12,450', icon: Receipt, change: '+10.18%', changeType: 'positive' },
-  { name: 'Expenses (Month)', value: '$3,200', icon: TrendingDown, change: '-2.4%', changeType: 'negative' },
-  { name: 'Payments Received', value: '$45,200', icon: CreditCard, change: '+12.5%', changeType: 'positive' },
+  { name: 'Pending Invoices', value: '₦12,450', icon: Receipt, change: '+10.18%', changeType: 'positive' },
+  { name: 'Expenses (Month)', value: '₦3,200', icon: TrendingDown, change: '-2.4%', changeType: 'negative' },
+  { name: 'Payments Received', value: '₦45,200', icon: CreditCard, change: '+12.5%', changeType: 'positive' },
 ];
 
 const chartData = [
@@ -75,8 +76,8 @@ export default function Home() {
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+                <YAxis tickFormatter={(value) => `₦${value}`} />
+                <Tooltip formatter={(value: any) => [formatCurrency(Number(value)), "Revenue"]} />
                 <Bar dataKey="revenue" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>

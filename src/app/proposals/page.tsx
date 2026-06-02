@@ -5,6 +5,7 @@ import { Plus, Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import pptxgen from "pptxgenjs";
 import { ProposalForm } from "./ProposalForm";
+import { formatCurrency, CURRENCY_SYMBOL } from "@/lib/utils";
 
 interface Proposal {
   _id: string;
@@ -41,7 +42,7 @@ export default function ProposalsPage() {
     slide.addText(proposal.title, { x: 1, y: 1, fontSize: 32, color: "363636" });
     slide.addText(`Proposal Number: ${proposal.proposalNumber}`, { x: 1, y: 2, fontSize: 18 });
     slide.addText(`Client: ${proposal.customerId.name}`, { x: 1, y: 2.5, fontSize: 18 });
-    slide.addText(`Total: $${proposal.total.toFixed(2)}`, { x: 1, y: 3, fontSize: 18 });
+    slide.addText(`Total: ${CURRENCY_SYMBOL}${proposal.total.toFixed(2)}`, { x: 1, y: 3, fontSize: 18 });
     pres.writeFile({ fileName: `Proposal_${proposal.proposalNumber}.pptx` });
   };
 
@@ -88,7 +89,7 @@ export default function ProposalsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
-                    ${proposal.total.toFixed(2)}
+                    {formatCurrency(proposal.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Button variant="ghost" size="sm" onClick={() => generatePPTX(proposal)}>
