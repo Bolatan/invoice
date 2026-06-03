@@ -14,24 +14,61 @@ import {
   Cell
 } from "recharts";
 
-const data = [
-  { name: 'Jan', revenue: 4000, expenses: 2400 },
-  { name: 'Feb', revenue: 3000, expenses: 1398 },
-  { name: 'Mar', revenue: 2000, expenses: 9800 },
-  { name: 'Apr', revenue: 2780, expenses: 3908 },
-  { name: 'May', revenue: 1890, expenses: 4800 },
-  { name: 'Jun', revenue: 2390, expenses: 3800 },
-];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-const pieData = [
-  { name: 'Services', value: 400 },
-  { name: 'Products', value: 300 },
-  { name: 'Consulting', value: 300 },
-];
+interface MonthlyData {
+  name: string;
+  revenue: number;
+  expenses: number;
+}
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+interface CategoryData {
+  name: string;
+  value: number;
+}
 
 export default function ReportsPage() {
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch('/api/reports');
+        if (!response.ok) {
+          throw new Error('Failed to fetch report data');
+        }
+        const data = await response.json();
+        setMonthlyData(data.monthlyData);
+        setCategoryData(data.expenseByCategory);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 p-4 rounded-md">
+        <p className="text-red-700">Error: {error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -41,43 +78,53 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Revenue vs Expenses</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Revenue vs Expenses (Last 6 Months)</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <BarChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
-                <Bar dataKey="revenue" fill="#3b82f6" />
-                <Bar dataKey="expenses" fill="#ef4444" />
+                <Tooltip
+                  formatter={(value: number) => `₦${value.toLocaleString()}`}
+                />
+                <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
+                <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Revenue by Category</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-6">Expenses by Category</h3>
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            {categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number) => `₦${value.toLocaleString()}`}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500">
+                No expense data available for categorization.
+              </div>
+            )}
           </div>
         </div>
       </div>
