@@ -8,6 +8,7 @@ export interface IInvoiceItem {
 }
 
 export interface IInvoice extends Document {
+  organizationId: mongoose.Types.ObjectId;
   invoiceNumber: string;
   customerId: mongoose.Types.ObjectId;
   date: Date;
@@ -27,7 +28,8 @@ export interface IInvoice extends Document {
 
 const InvoiceSchema = new Schema<IInvoice>(
   {
-    invoiceNumber: { type: String, required: true, unique: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
+    invoiceNumber: { type: String, required: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     date: { type: Date, default: Date.now },
     dueDate: { type: Date, required: true },
@@ -54,5 +56,7 @@ const InvoiceSchema = new Schema<IInvoice>(
   },
   { timestamps: true }
 );
+
+InvoiceSchema.index({ organizationId: 1, invoiceNumber: 1 }, { unique: true });
 
 export default mongoose.models.Invoice || mongoose.model<IInvoice>('Invoice', InvoiceSchema);
