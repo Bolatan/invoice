@@ -12,6 +12,7 @@ export interface ICustomer extends Document {
     country?: string;
   };
   company?: string;
+  organizationId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,7 +20,8 @@ export interface ICustomer extends Document {
 const CustomerSchema = new Schema<ICustomer>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
     phone: { type: String },
     address: {
       street: String,
@@ -32,5 +34,8 @@ const CustomerSchema = new Schema<ICustomer>(
   },
   { timestamps: true }
 );
+
+// Compound index to ensure email is unique per organization
+CustomerSchema.index({ email: 1, organizationId: 1 }, { unique: true });
 
 export default mongoose.models.Customer || mongoose.model<ICustomer>('Customer', CustomerSchema);

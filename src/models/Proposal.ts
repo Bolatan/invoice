@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IProposal extends Document {
   proposalNumber: string;
+  organizationId: mongoose.Types.ObjectId;
   customerId: mongoose.Types.ObjectId;
   title: string;
   date: Date;
@@ -19,7 +20,8 @@ export interface IProposal extends Document {
 
 const ProposalSchema = new Schema<IProposal>(
   {
-    proposalNumber: { type: String, required: true, unique: true },
+    proposalNumber: { type: String, required: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     title: { type: String, required: true },
     date: { type: Date, default: Date.now },
@@ -40,5 +42,7 @@ const ProposalSchema = new Schema<IProposal>(
   },
   { timestamps: true }
 );
+
+ProposalSchema.index({ proposalNumber: 1, organizationId: 1 }, { unique: true });
 
 export default mongoose.models.Proposal || mongoose.model<IProposal>('Proposal', ProposalSchema);

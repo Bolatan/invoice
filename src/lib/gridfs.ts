@@ -9,11 +9,11 @@ export async function getGridFSBucket() {
   return new GridFSBucket(db, { bucketName: 'uploads' });
 }
 
-export async function uploadToGridFS(file: File) {
+export async function uploadToGridFS(file: File, metadata: any = {}) {
   const bucket = await getGridFSBucket();
   const buffer = Buffer.from(await file.arrayBuffer());
   const uploadStream = bucket.openUploadStream(file.name, {
-    metadata: { contentType: file.type }
+    metadata: { ...metadata, contentType: file.type }
   });
 
   return new Promise((resolve, reject) => {

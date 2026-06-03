@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPayment extends Document {
   paymentNumber: string;
+  organizationId: mongoose.Types.ObjectId;
   customerId: mongoose.Types.ObjectId;
   invoiceId?: mongoose.Types.ObjectId;
   date: Date;
@@ -15,7 +16,8 @@ export interface IPayment extends Document {
 
 const PaymentSchema = new Schema<IPayment>(
   {
-    paymentNumber: { type: String, required: true, unique: true },
+    paymentNumber: { type: String, required: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     invoiceId: { type: Schema.Types.ObjectId, ref: 'Invoice' },
     date: { type: Date, default: Date.now },
@@ -30,5 +32,7 @@ const PaymentSchema = new Schema<IPayment>(
   },
   { timestamps: true }
 );
+
+PaymentSchema.index({ paymentNumber: 1, organizationId: 1 }, { unique: true });
 
 export default mongoose.models.Payment || mongoose.model<IPayment>('Payment', PaymentSchema);
