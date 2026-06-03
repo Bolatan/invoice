@@ -86,7 +86,7 @@ export default function ReportsPage() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip
-                  formatter={(value: number) => `₦${value.toLocaleString()}`}
+                  formatter={(value: any) => `₦${Number(value).toLocaleString()}`}
                 />
                 <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
                 <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
@@ -116,7 +116,7 @@ export default function ReportsPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => `₦${value.toLocaleString()}`}
+                    formatter={(value: any) => `₦${Number(value).toLocaleString()}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
