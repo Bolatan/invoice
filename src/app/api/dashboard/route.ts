@@ -6,9 +6,8 @@ import Customer from '@/models/Customer';
 import Payment from '@/models/Payment';
 
 export async function GET() {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const totalCustomers = await Customer.countDocuments();
 
     const pendingInvoices = await Invoice.aggregate([
