@@ -98,7 +98,7 @@ export default function Home() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(value: number) => `₦${value.toLocaleString()}`} />
+                <Tooltip formatter={(value: any) => `₦${Number(value).toLocaleString()}`} />
                 <Bar dataKey="revenue" fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
