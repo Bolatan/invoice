@@ -1,9 +1,12 @@
 import { MongoClient, GridFSBucket } from 'mongodb';
 
-const uri = process.env.MONGODB_URI!;
-const client = new MongoClient(uri);
+const uri = process.env.MONGODB_URI;
+const client = uri ? new MongoClient(uri) : null;
 
 export async function getGridFSBucket() {
+  if (!client) {
+    throw new Error('MONGODB_URI is not defined');
+  }
   await client.connect();
   const db = client.db();
   return new GridFSBucket(db, { bucketName: 'uploads' });

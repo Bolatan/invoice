@@ -3,8 +3,8 @@ import dbConnect from '@/lib/db';
 import Expense from '@/models/Expense';
 
 export async function GET() {
-  await dbConnect();
   try {
+    await dbConnect();
     const expenses = await Expense.find({}).sort({ date: -1 });
     return NextResponse.json(expenses);
   } catch (error) {
@@ -13,8 +13,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  await dbConnect();
   try {
+    await dbConnect();
     const body = await request.json();
     const expense = await Expense.create(body);
     return NextResponse.json(expense, { status: 201 });

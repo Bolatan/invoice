@@ -3,8 +3,8 @@ import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
 
 export async function GET() {
-  await dbConnect();
   try {
+    await dbConnect();
     const invoices = await Invoice.find({}).populate('customerId', 'name').sort({ createdAt: -1 });
     return NextResponse.json(invoices);
   } catch (error) {
@@ -13,8 +13,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  await dbConnect();
   try {
+    await dbConnect();
     const body = await request.json();
 
     // Set nextOccurrence if it is a recurring invoice

@@ -34,6 +34,12 @@ const chartData = [
 ];
 
 export default function Home() {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="space-y-8">
       <div>
@@ -68,18 +74,24 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <div className="rounded-lg bg-white p-6 shadow">
+        <div className="rounded-lg bg-white p-6 shadow min-h-[350px]">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue Overview</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="revenue" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-64 w-full">
+            {mounted ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="revenue" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full bg-gray-50 animate-pulse rounded flex items-center justify-center">
+                Loading chart...
+              </div>
+            )}
           </div>
         </div>
         <div className="rounded-lg bg-white p-6 shadow">
