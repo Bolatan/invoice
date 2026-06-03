@@ -22,8 +22,10 @@ export default function Home() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const fetchDashboardData = async () => {
       try {
         const response = await fetch('/api/dashboard');
@@ -93,15 +95,17 @@ export default function Home() {
         <div className="rounded-lg bg-white p-6 shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue Overview</h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value: any) => `₦${Number(value).toLocaleString()}`} />
-                <Bar dataKey="revenue" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <BarChart data={data.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value: any) => `₦${Number(value).toLocaleString()}`} />
+                  <Bar dataKey="revenue" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
         <div className="rounded-lg bg-white p-6 shadow">

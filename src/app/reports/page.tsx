@@ -32,8 +32,10 @@ export default function ReportsPage() {
   const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const fetchReports = async () => {
       try {
         const response = await fetch('/api/reports');
@@ -80,26 +82,28 @@ export default function ReportsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Revenue vs Expenses (Last 6 Months)</h3>
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => `₦${Number(value).toLocaleString()}`}
-                />
-                <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
-                <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
-              </BarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value: any) => `₦${Number(value).toLocaleString()}`}
+                  />
+                  <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" />
+                  <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Expenses by Category</h3>
           <div className="h-80">
-            {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+            {mounted && categoryData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <PieChart>
                   <Pie
                     data={categoryData}

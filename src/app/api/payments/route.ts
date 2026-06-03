@@ -4,8 +4,8 @@ import Payment from '@/models/Payment';
 import Invoice from '@/models/Invoice';
 
 export async function GET() {
-  await dbConnect();
   try {
+    await dbConnect();
     const payments = await Payment.find({}).populate('customerId', 'name').sort({ date: -1 });
     return NextResponse.json(payments);
   } catch (error) {
@@ -14,8 +14,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  await dbConnect();
   try {
+    await dbConnect();
     const body = await request.json();
     const payment = await Payment.create(body);
 

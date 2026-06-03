@@ -4,9 +4,8 @@ import Invoice from '@/models/Invoice';
 import Expense from '@/models/Expense';
 
 export async function GET() {
-  await dbConnect();
-
   try {
+    await dbConnect();
     // Get date range for the last 6 months
     const now = new Date();
     const sixMonthsAgo = new Date();
