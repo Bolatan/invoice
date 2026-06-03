@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISetting extends Document {
+  organizationId: mongoose.Types.ObjectId;
   organizationName: string;
   email: string;
   phone?: string;
@@ -14,6 +15,7 @@ export interface ISetting extends Document {
 
 const SettingSchema = new Schema<ISetting>(
   {
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, unique: true, index: true },
     organizationName: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String },
