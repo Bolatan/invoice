@@ -19,6 +19,9 @@ export async function POST(request: Request) {
     const customer = await Customer.create(body);
     return NextResponse.json(customer, { status: 201 });
   } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'A customer with this email already exists.' }, { status: 400 });
+    }
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }

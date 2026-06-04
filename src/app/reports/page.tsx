@@ -83,7 +83,7 @@ export default function ReportsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-6">Revenue vs Expenses (Last 6 Months)</h3>
           <div className="h-80">
             {mounted && (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
@@ -103,7 +103,7 @@ export default function ReportsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-6">Expenses by Category</h3>
           <div className="h-80">
             {mounted && categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
                   <Pie
                     data={categoryData}
