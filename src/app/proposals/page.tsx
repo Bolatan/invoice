@@ -13,6 +13,11 @@ interface Proposal {
   customerId: { _id: string; name: string };
   total: number;
   status: string;
+  items?: {
+    description: string;
+    amount: number;
+    imageUrl?: string;
+  }[];
 }
 
 export default function ProposalsPage() {
@@ -35,13 +40,48 @@ export default function ProposalsPage() {
     }
   };
 
-  const generatePPTX = (proposal: Proposal) => {
+  const generatePPTX = async (proposal: Proposal) => {
     const pres = new pptxgen();
-    const slide = pres.addSlide();
-    slide.addText(proposal.title, { x: 1, y: 1, fontSize: 32, color: "363636" });
-    slide.addText(`Proposal Number: ${proposal.proposalNumber}`, { x: 1, y: 2, fontSize: 18 });
-    slide.addText(`Client: ${proposal.customerId.name}`, { x: 1, y: 2.5, fontSize: 18 });
-    slide.addText(`Total: $${proposal.total.toFixed(2)}`, { x: 1, y: 3, fontSize: 18 });
+
+    // Title Slide
+    const titleSlide = pres.addSlide();
+    titleSlide.addText(proposal.title, { x: 1, y: 1.5, w: '80%', fontSize: 32, color: "363636", align: 'center' });
+    titleSlide.addText(`Proposal: ${proposal.proposalNumber}`, { x: 1, y: 2.5, w: '80%', fontSize: 18, align: 'center' });
+    titleSlide.addText(`Client: ${proposal.customerId.name}`, { x: 1, y: 3.5, w: '80%', fontSize: 18, align: 'center' });
+
+    // Items Slides
+    if (proposal.items && proposal.items.length > 0) {
+      for (const item of proposal.items) {
+        const slide = pres.addSlide();
+        slide.addText(item.description, { x: 0.5, y: 0.5, w: '90%', fontSize: 24, bold: true });
+        slide.addText(`Amount: $${item.amount.toFixed(2)}`, { x: 0.5, y: 1.2, w: '90%', fontSize: 18 });
+
+        if (item.imageUrl) {
+          try {
+            // Check if it's a relative URL and prepend origin if needed
+            const imageUrl = item.imageUrl.startsWith('http')
+              ? item.imageUrl
+              : `${window.location.origin}${item.imageUrl}`;
+
+            slide.addImage({
+              path: imageUrl,
+              x: 0.5,
+              y: 1.8,
+              w: 5,
+              h: 3
+            });
+          } catch (error) {
+            console.error("Failed to add image to PPTX", error);
+          }
+        }
+      }
+    }
+
+    // Summary Slide
+    const summarySlide = pres.addSlide();
+    summarySlide.addText("Summary", { x: 1, y: 1, fontSize: 28, bold: true });
+    summarySlide.addText(`Total Proposal Amount: $${proposal.total.toFixed(2)}`, { x: 1, y: 2, fontSize: 20 });
+
     pres.writeFile({ fileName: `Proposal_${proposal.proposalNumber}.pptx` });
   };
 

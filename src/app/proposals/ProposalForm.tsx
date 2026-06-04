@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
 
 const proposalSchema = z.object({
   proposalNumber: z.string().min(1, "Required"),
@@ -24,6 +24,7 @@ const proposalSchema = z.object({
   items: z.array(z.object({
     description: z.string().min(1, "Required"),
     amount: z.number().min(0),
+    imageUrl: z.string().optional(),
   })).min(1),
 });
 
@@ -37,16 +38,46 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
 
-  const { register, handleSubmit, control, reset, watch, formState: { isSubmitting } } = useForm<ProposalFormValues>({
+  const { register, handleSubmit, control, reset, watch, setValue, formState: { isSubmitting } } = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalSchema),
     defaultValues: {
       proposalNumber: `PROP-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
-      items: [{ description: "", amount: 0 }],
+      items: [{ description: "", amount: 0, imageUrl: "" }],
     }
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
+  const [uploadingIndices, setUploadingIndices] = useState<Set<number>>(new Set());
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingIndices(prev => new Set(prev).add(index));
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setValue(`items.${index}.imageUrl`, data.url);
+      }
+    } catch (error) {
+      console.error('Upload failed', error);
+    } finally {
+      setUploadingIndices(prev => {
+        const next = new Set(prev);
+        next.delete(index);
+        return next;
+      });
+    }
+  };
 
   useEffect(() => {
     fetch("/api/customers").then(res => res.json()).then(setCustomers);
@@ -102,13 +133,55 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm font-semibold">Items</div>
             {fields.map((field, index) => (
-              <div key={field.id} className="grid grid-cols-12 gap-2">
-                <div className="col-span-8"><Input {...register(`items.${index}.description` as const)} placeholder="Description" /></div>
-                <div className="col-span-3"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" placeholder="Amount" /></div>
-                <div className="col-span-1"><Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button></div>
+              <div key={field.id} className="space-y-2 border-b pb-4 last:border-0">
+                <div className="grid grid-cols-12 gap-2">
+                  <div className="col-span-7"><Input {...register(`items.${index}.description` as const)} placeholder="Description" /></div>
+                  <div className="col-span-3"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" placeholder="Amount" /></div>
+                  <div className="col-span-2 flex items-center space-x-1">
+                    <div className="relative">
+                      <input
+                        type="file"
+                        ref={el => { fileInputRefs.current[index] = el; }}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(index, e)}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRefs.current[index]?.click()}
+                        disabled={uploadingIndices.has(index)}
+                      >
+                        {uploadingIndices.has(index) ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ImageIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+                  </div>
+                </div>
+                {watch(`items.${index}.imageUrl`) && (
+                  <div className="mt-2 relative w-20 h-20 border rounded-md overflow-hidden">
+                    <img
+                      src={watch(`items.${index}.imageUrl`)}
+                      alt="Item preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl-md"
+                      onClick={() => setValue(`items.${index}.imageUrl`, "")}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ description: "", amount: 0 })}>Add Item</Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => append({ description: "", amount: 0, imageUrl: "" })}>Add Item</Button>
           </div>
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
