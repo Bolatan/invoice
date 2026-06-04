@@ -27,11 +27,15 @@ type CustomerFormValues = z.infer<typeof customerSchema>;
 
 interface CustomerFormProps {
   onSuccess: () => void;
+  customer?: any;
+  trigger?: React.ReactNode;
 }
 
-export function CustomerForm({ onSuccess }: CustomerFormProps) {
+export function CustomerForm({ onSuccess, customer, trigger }: CustomerFormProps) {
   const [open, setOpen] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
+  const isEditing = !!customer;
+
   const {
     register,
     handleSubmit,
@@ -39,13 +43,28 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
     formState: { errors, isSubmitting }
   } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
+    defaultValues: customer || {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+    }
   });
+
+  React.useEffect(() => {
+    if (open && customer) {
+      reset(customer);
+    }
+  }, [open, customer, reset]);
 
   const onSubmit = async (data: CustomerFormValues) => {
     setSubmitError(null);
     try {
-      const res = await fetch("/api/customers", {
-        method: "POST",
+      const url = isEditing ? `/api/customers/${customer._id}` : "/api/customers";
+      const method = isEditing ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
@@ -53,11 +72,11 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
       const result = await res.json();
 
       if (res.ok) {
-        reset();
+        if (!isEditing) reset();
         setOpen(false);
         onSuccess();
       } else {
-        setSubmitError(result.error || "Failed to create customer");
+        setSubmitError(result.error || `Failed to ${isEditing ? "update" : "create"} customer`);
       }
     } catch (error) {
       console.error("Failed to create customer", error);
@@ -68,15 +87,19 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Customer
-        </Button>
+        {trigger || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> New Customer
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Customer</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Customer" : "Add New Customer"}</DialogTitle>
           <DialogDescription>
-            Enter the details of the new customer here. Click save when you're done.
+            {isEditing
+              ? "Update the details of the customer here. Click save when you're done."
+              : "Enter the details of the new customer here. Click save when you're done."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
@@ -106,7 +129,7 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Customer"}
+              {isSubmitting ? "Saving..." : isEditing ? "Save Changes" : "Create Customer"}
             </Button>
           </div>
         </form>

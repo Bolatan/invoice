@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, MoreVertical } from "lucide-react";
+import { Search, MoreVertical, Edit2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { CustomerForm } from "./CustomerForm";
+import { Button } from "@/components/ui/Button";
 
 interface Customer {
   _id: string;
@@ -78,9 +79,15 @@ export default function CustomersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.phone || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <MoreVertical className="h-5 w-5" />
-                    </button>
+                    <CustomerForm
+                      customer={customer}
+                      onSuccess={fetchCustomers}
+                      trigger={
+                        <Button variant="ghost" size="sm">
+                          <Edit2 className="h-4 w-4 mr-1" /> Edit
+                        </Button>
+                      }
+                    />
                   </td>
                 </tr>
               ))
