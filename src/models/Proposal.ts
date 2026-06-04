@@ -10,6 +10,7 @@ export interface IProposal extends Document {
   items: {
     description: string;
     amount: number;
+    imageUrl?: string;
   }[];
   total: number;
   status: 'draft' | 'sent' | 'accepted' | 'declined';
@@ -29,6 +30,7 @@ const ProposalSchema = new Schema<IProposal>(
       {
         description: { type: String, required: true },
         amount: { type: Number, required: true },
+        imageUrl: { type: String },
       },
     ],
     total: { type: Number, required: true },
