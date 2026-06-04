@@ -7,6 +7,7 @@ import * as z from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -90,6 +91,9 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Record New Expense</DialogTitle>
+          <DialogDescription>
+            Fill in the expense details and upload a receipt if available.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
