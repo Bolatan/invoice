@@ -26,8 +26,9 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     fetchInvoices();
-  }, []);
+  }, [tenant]);
 
   const fetchInvoices = async () => {
     try {

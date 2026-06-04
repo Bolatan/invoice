@@ -23,8 +23,9 @@ export default function ProposalsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     fetchProposals();
-  }, []);
+  }, [tenant]);
 
   const fetchProposals = async () => {
     try {

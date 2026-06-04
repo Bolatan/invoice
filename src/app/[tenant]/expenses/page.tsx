@@ -21,8 +21,9 @@ export default function ExpensesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     fetchExpenses();
-  }, []);
+  }, [tenant]);
 
   const fetchExpenses = async () => {
     try {

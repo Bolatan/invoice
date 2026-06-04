@@ -21,8 +21,9 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     fetchCustomers();
-  }, []);
+  }, [tenant]);
 
   const fetchCustomers = async () => {
     try {

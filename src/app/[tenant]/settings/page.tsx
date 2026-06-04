@@ -35,6 +35,7 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
+    if (!tenant) return;
     const fetchSettings = async () => {
       try {
         const res = await fetch(`/${tenant}/api/settings`);
@@ -50,7 +51,7 @@ export default function SettingsPage() {
     };
 
     fetchSettings();
-  }, [reset]);
+  }, [reset, tenant]);
 
   const onSubmit = async (data: SettingsFormValues) => {
     setMessage(null);

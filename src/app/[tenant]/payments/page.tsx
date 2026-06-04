@@ -23,8 +23,9 @@ export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     fetchPayments();
-  }, []);
+  }, [tenant]);
 
   const fetchPayments = async () => {
     try {

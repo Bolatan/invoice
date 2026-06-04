@@ -25,6 +25,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!tenant) return;
     const fetchReports = async () => {
       try {
         const res = await fetch(`/${tenant}/api/reports`);
