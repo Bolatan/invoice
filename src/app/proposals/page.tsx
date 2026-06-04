@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import pptxgen from "pptxgenjs";
 import { ProposalForm } from "./ProposalForm";
@@ -130,7 +130,16 @@ export default function ProposalsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
                     ${proposal.total.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <ProposalForm
+                      proposal={proposal}
+                      onSuccess={fetchProposals}
+                      trigger={
+                        <Button variant="ghost" size="sm">
+                          <Edit2 className="h-4 w-4 mr-1" /> Edit
+                        </Button>
+                      }
+                    />
                     <Button variant="ghost" size="sm" onClick={() => generatePPTX(proposal)}>
                       <Download className="h-4 w-4 mr-1" /> PPTX
                     </Button>

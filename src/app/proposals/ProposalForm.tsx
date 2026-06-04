@@ -33,15 +33,22 @@ type ProposalFormValues = z.infer<typeof proposalSchema>;
 
 interface ProposalFormProps {
   onSuccess: () => void;
+  proposal?: any;
+  trigger?: React.ReactNode;
 }
 
-export function ProposalForm({ onSuccess }: ProposalFormProps) {
+export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps) {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
+  const isEditing = !!proposal;
 
   const { register, handleSubmit, control, reset, watch, setValue, formState: { isSubmitting } } = useForm<ProposalFormValues>({
     resolver: zodResolver(proposalSchema),
-    defaultValues: {
+    defaultValues: proposal ? {
+      ...proposal,
+      customerId: proposal.customerId._id || proposal.customerId,
+      date: new Date(proposal.date).toISOString().split('T')[0],
+    } : {
       proposalNumber: `PROP-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
       items: [{ description: "", amount: 0, imageUrl: "" }],
@@ -49,6 +56,16 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
+
+  useEffect(() => {
+    if (open && proposal) {
+      reset({
+        ...proposal,
+        customerId: proposal.customerId._id || proposal.customerId,
+        date: new Date(proposal.date).toISOString().split('T')[0],
+      });
+    }
+  }, [open, proposal, reset]);
   const [uploadingIndices, setUploadingIndices] = useState<Set<number>>(new Set());
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -87,33 +104,40 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
   const onSubmit = async (data: any) => {
     try {
       const total = data.items.reduce((acc: number, item: any) => acc + item.amount, 0);
-      const res = await fetch("/api/proposals", {
-        method: "POST",
+      const url = isEditing ? `/api/proposals/${proposal._id}` : "/api/proposals";
+      const method = isEditing ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, total }),
       });
       if (res.ok) {
-        reset();
+        if (!isEditing) reset();
         setOpen(false);
         onSuccess();
       }
     } catch (error) {
-      console.error("Failed to create proposal", error);
+      console.error(`Failed to ${isEditing ? "update" : "create"} proposal`, error);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Proposal
-        </Button>
+        {trigger || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> New Proposal
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Proposal</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Proposal" : "Create New Proposal"}</DialogTitle>
           <DialogDescription>
-            Draft a new proposal for your customer. Add items and set the total.
+            {isEditing
+              ? "Update the details of your proposal here. Click save when you're done."
+              : "Draft a new proposal for your customer. Add items and set the total."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
@@ -189,7 +213,9 @@ export function ProposalForm({ onSuccess }: ProposalFormProps) {
           </div>
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>Create Proposal</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : isEditing ? "Save Changes" : "Create Proposal"}
+            </Button>
           </div>
         </form>
       </DialogContent>
