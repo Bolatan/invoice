@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Plus, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 const proposalSchema = z.object({
   proposalNumber: z.string().min(1, "Required"),
@@ -150,7 +151,7 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
               <label className="text-sm font-medium">Customer</label>
               <select {...register("customerId")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
                 <option value="">Select Customer</option>
-                {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                {Array.isArray(customers) && customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
             </div>
           </div>
@@ -159,7 +160,9 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
             <Input {...register("title")} placeholder="Proposal for Web Development" />
           </div>
           <div className="space-y-4">
-            <div className="flex justify-between items-center text-sm font-semibold">Items</div>
+            <div className="flex justify-between items-center text-sm font-semibold">
+              Items (Total: {formatCurrency(watch("items").reduce((acc, item) => acc + (item.amount || 0), 0))})
+            </div>
             {fields.map((field, index) => (
               <div key={field.id} className="space-y-2 border-b pb-4 last:border-0">
                 <div className="grid grid-cols-12 gap-2">

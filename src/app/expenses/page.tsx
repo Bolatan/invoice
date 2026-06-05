@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Filter } from "lucide-react";
 import { ExpenseForm } from "./ExpenseForm";
+import { formatCurrency } from "@/lib/utils";
 
 interface Expense {
   _id: string;
@@ -71,7 +72,7 @@ export default function ExpensesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{expense.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{expense.vendor || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                    ${expense.amount.toFixed(2)}
+                    {formatCurrency(expense.amount)}
                   </td>
                 </tr>
               ))
