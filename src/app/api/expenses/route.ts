@@ -7,8 +7,9 @@ export async function GET() {
     await dbConnect();
     const expenses = await Expense.find({}).sort({ date: -1 });
     return NextResponse.json(expenses);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching expenses:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch expenses' }, { status: 500 });
   }
 }
 

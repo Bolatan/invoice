@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
+import Customer from '@/models/Customer';
 
 export async function GET() {
   try {
     await dbConnect();
     const invoices = await Invoice.find({}).populate('customerId', 'name').sort({ createdAt: -1 });
     return NextResponse.json(invoices);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching invoices:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch invoices' }, { status: 500 });
   }
 }
 

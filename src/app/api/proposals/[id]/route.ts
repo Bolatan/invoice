@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Proposal from '@/models/Proposal';
+import Customer from '@/models/Customer';
 
 export async function GET(
   request: Request,
@@ -14,8 +15,9 @@ export async function GET(
       return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
     return NextResponse.json(proposal);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch proposal' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching proposal:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch proposal' }, { status: 500 });
   }
 }
 
@@ -55,7 +57,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
     return NextResponse.json({ message: 'Proposal deleted successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete proposal' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error deleting proposal:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete proposal' }, { status: 500 });
   }
 }

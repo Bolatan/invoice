@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Proposal from '@/models/Proposal';
+import Customer from '@/models/Customer';
 
 export async function GET() {
   try {
     await dbConnect();
     const proposals = await Proposal.find({}).populate('customerId', 'name').sort({ createdAt: -1 });
     return NextResponse.json(proposals);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch proposals' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching proposals:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch proposals' }, { status: 500 });
   }
 }
 
