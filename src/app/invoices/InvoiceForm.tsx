@@ -26,7 +26,7 @@ const invoiceSchema = z.object({
   recurringInterval: z.enum(["weekly", "monthly", "yearly"]).optional(),
   items: z.array(z.object({
     description: z.string().min(1, "Required"),
-    quantity: z.number().min(1),
+    quantity: z.number().gt(0),
     rate: z.number().min(0),
     amount: z.number(),
   })).min(1, "At least one item is required"),
@@ -73,13 +73,22 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
   const items = watch("items");
 
   useEffect(() => {
-    items.forEach((item, index) => {
-      const amount = item.quantity * item.rate;
-      if (item.amount !== amount) {
-        setValue(`items.${index}.amount`, amount);
+    const subscription = watch((value, { name, type }) => {
+      if (name?.startsWith('items.') && (name.endsWith('.quantity') || name.endsWith('.rate'))) {
+        const index = parseInt(name.split('.')[1]);
+        const item = value.items?.[index];
+        if (item) {
+          const qty = Number(item.quantity) || 0;
+          const rate = Number(item.rate) || 0;
+          const amount = qty * rate;
+          if (item.amount !== amount) {
+            setValue(`items.${index}.amount` as any, amount);
+          }
+        }
       }
     });
-  }, [items, setValue]);
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -175,10 +184,10 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
                   <Input {...register(`items.${index}.description` as const)} placeholder="Description" />
                 </div>
                 <div className="col-span-2">
-                  <Input {...register(`items.${index}.quantity` as const, { valueAsNumber: true })} type="number" placeholder="Qty" />
+                  <Input {...register(`items.${index}.quantity` as const, { valueAsNumber: true })} type="number" min="0" step="any" placeholder="Qty" />
                 </div>
                 <div className="col-span-2">
-                  <Input {...register(`items.${index}.rate` as const, { valueAsNumber: true })} type="number" placeholder="Rate" />
+                  <Input {...register(`items.${index}.rate` as const, { valueAsNumber: true })} type="number" min="0" step="any" placeholder="Rate" />
                 </div>
                 <div className="col-span-1 text-sm py-2 font-medium">
                   {formatCurrency(watch(`items.${index}.amount`) || 0)}

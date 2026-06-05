@@ -103,7 +103,7 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Amount</label>
-              <Input {...register("amount")} type="number" step="0.01" placeholder="0.00" />
+              <Input {...register("amount")} type="number" step="any" min="0" placeholder="0.00" />
             </div>
           </div>
           <div className="space-y-2">
