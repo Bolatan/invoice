@@ -21,6 +21,7 @@ export interface IInvoice extends Document {
   isRecurring: boolean;
   recurringInterval?: 'monthly' | 'weekly' | 'yearly';
   nextOccurrence?: Date;
+  proposalId?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +52,7 @@ const InvoiceSchema = new Schema<IInvoice>(
     isRecurring: { type: Boolean, default: false },
     recurringInterval: { type: String, enum: ['weekly', 'monthly', 'yearly'] },
     nextOccurrence: { type: Date },
+    proposalId: { type: Schema.Types.ObjectId, ref: 'Proposal' },
   },
   { timestamps: true }
 );

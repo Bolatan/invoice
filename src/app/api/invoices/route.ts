@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
 import Customer from '@/models/Customer';
+import Proposal from '@/models/Proposal';
 
 export async function GET() {
   try {
     await dbConnect();
-    const invoices = await Invoice.find({}).populate('customerId', 'name').sort({ createdAt: -1 });
+    const invoices = await Invoice.find({})
+      .populate('customerId', 'name')
+      .populate('proposalId', 'proposalNumber')
+      .sort({ createdAt: -1 });
     return NextResponse.json(invoices);
   } catch (error: any) {
     console.error('Error fetching invoices:', error);

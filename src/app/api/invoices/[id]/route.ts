@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
 import Customer from '@/models/Customer';
+import Proposal from '@/models/Proposal';
 
 export async function GET(
   request: Request,
@@ -10,7 +11,9 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await params;
-    const invoice = await Invoice.findById(id).populate('customerId', 'name');
+    const invoice = await Invoice.findById(id)
+      .populate('customerId', 'name')
+      .populate('proposalId', 'proposalNumber');
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }

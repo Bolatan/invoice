@@ -25,6 +25,7 @@ const invoiceSchema = z.object({
   status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   isRecurring: z.boolean(),
   recurringInterval: z.enum(["weekly", "monthly", "yearly"]).optional(),
+  proposalId: z.string().optional(),
   items: z.array(z.object({
     description: z.string().min(1, "Required"),
     quantity: z.number().gt(0),
@@ -44,6 +45,7 @@ interface InvoiceFormProps {
 export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<any[]>([]);
   const isEditing = !!invoice;
 
   const {
@@ -62,6 +64,7 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
       date: new Date(invoice.date).toISOString().split('T')[0],
       dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
       status: invoice.status || 'draft',
+      proposalId: invoice.proposalId?._id || invoice.proposalId,
     } : {
       invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
@@ -85,13 +88,34 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
         date: new Date(invoice.date).toISOString().split('T')[0],
         dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
         status: invoice.status || 'draft',
+        proposalId: invoice.proposalId?._id || invoice.proposalId,
       });
     }
   }, [open, invoice, reset]);
 
   useEffect(() => {
     fetch("/api/customers").then(res => res.json()).then(setCustomers);
+    fetch("/api/proposals").then(res => res.json()).then(setProposals);
   }, []);
+
+  const selectedCustomerId = watch("customerId");
+  const filteredProposals = proposals.filter(p => p.customerId?._id === selectedCustomerId || p.customerId === selectedCustomerId);
+
+  const selectedProposalId = watch("proposalId");
+  useEffect(() => {
+    if (selectedProposalId && !isEditing) {
+      const proposal = proposals.find(p => p._id === selectedProposalId);
+      if (proposal && proposal.items) {
+        const newItems = proposal.items.map((item: any) => ({
+          description: item.description,
+          quantity: 1,
+          rate: item.amount,
+          amount: item.amount
+        }));
+        setValue("items", newItems);
+      }
+    }
+  }, [selectedProposalId, proposals, isEditing, setValue]);
 
   const items = watch("items");
 
@@ -170,6 +194,22 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
               >
                 <option value="">Select a customer</option>
                 {Array.isArray(customers) && customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="proposalId" className="text-sm font-medium">Associated Proposal (Optional)</label>
+              <select
+                id="proposalId"
+                {...register("proposalId")}
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">None</option>
+                {Array.isArray(filteredProposals) && filteredProposals.map(p => (
+                  <option key={p._id} value={p._id}>{p.proposalNumber} - {p.title}</option>
+                ))}
               </select>
             </div>
           </div>
