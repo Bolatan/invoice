@@ -7,8 +7,9 @@ export async function GET() {
     await dbConnect();
     const customers = await Customer.find({}).sort({ createdAt: -1 });
     return NextResponse.json(customers);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching customers:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch customers' }, { status: 500 });
   }
 }
 

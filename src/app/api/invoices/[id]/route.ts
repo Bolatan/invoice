@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
+import Customer from '@/models/Customer';
 
 export async function GET(
   request: Request,
@@ -14,8 +15,9 @@ export async function GET(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
     return NextResponse.json(invoice);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch invoice' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error fetching invoice:', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch invoice' }, { status: 500 });
   }
 }
 
@@ -55,7 +57,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
     return NextResponse.json({ message: 'Invoice deleted successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete invoice' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Error deleting invoice:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete invoice' }, { status: 500 });
   }
 }
