@@ -22,6 +22,7 @@ const proposalSchema = z.object({
   title: z.string().min(1, "Required"),
   date: z.string(),
   content: z.string().optional(),
+  status: z.enum(['draft', 'sent', 'accepted', 'declined']),
   items: z.array(z.object({
     description: z.string().min(1, "Required"),
     amount: z.number().min(0),
@@ -48,9 +49,11 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
       ...proposal,
       customerId: proposal.customerId._id || proposal.customerId,
       date: new Date(proposal.date).toISOString().split('T')[0],
+      status: proposal.status || 'draft',
     } : {
       proposalNumber: `PROP-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
+      status: 'draft',
       items: [{ description: "", amount: 0, imageUrl: "" }],
     }
   });
@@ -147,10 +150,25 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
               <Input {...register("proposalNumber")} />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Date</label>
+              <Input type="date" {...register("date")} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <label className="text-sm font-medium">Customer</label>
               <select {...register("customerId")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
                 <option value="">Select Customer</option>
                 {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <select {...register("status")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm capitalize">
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
               </select>
             </div>
           </div>

@@ -1,8 +1,10 @@
 $ next dev
 ▲ Next.js 16.2.7 (Turbopack)
-- Local:         http://localhost:3001
-- Network:       http://192.168.0.2:3001
-✓ Ready in 517ms
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 633ms
 
-○ Compiling / ...
- GET / 200 in 5.4s (next.js: 5.0s, application-code: 469ms)
+○ Compiling /proposals ...
+ GET /proposals 200 in 5.2s (next.js: 4.5s, application-code: 627ms)
+ GET /api/customers 200 in 2.0s (next.js: 1225ms, application-code: 795ms)
+ GET /api/proposals 200 in 2.0s (next.js: 1069ms, application-code: 948ms)
