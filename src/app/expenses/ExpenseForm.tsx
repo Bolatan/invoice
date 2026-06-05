@@ -108,7 +108,17 @@ export function ExpenseForm({ onSuccess }: ExpenseFormProps) {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Category</label>
-            <Input {...register("category")} placeholder="e.g. Travel, Office Supplies" />
+            <select
+              {...register("category")}
+              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Select Category</option>
+              <option value="Transport">Transport</option>
+              <option value="Office Supplies">Office Supplies</option>
+              <option value="Accommodation">Accommodation</option>
+              <option value="Entertainment">Entertainment</option>
+            </select>
+            {errors.category && <p className="text-xs text-red-500">{errors.category.message}</p>}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium">Vendor</label>
