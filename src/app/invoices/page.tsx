@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Download, Mail, RefreshCw } from "lucide-react";
+import { Plus, Download, Mail, RefreshCw, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -15,9 +15,26 @@ interface Invoice {
   total: number;
   status: string;
   date: string;
+  dueDate: string;
   isRecurring: boolean;
   items: any[];
 }
+
+const getStatusColor = (status: string) => {
+  switch ((status || "draft").toLowerCase()) {
+    case "paid":
+      return "bg-green-100 text-green-800";
+    case "sent":
+      return "bg-blue-100 text-blue-800";
+    case "overdue":
+      return "bg-red-100 text-red-800";
+    case "cancelled":
+      return "bg-gray-100 text-gray-800";
+    case "draft":
+    default:
+      return "bg-yellow-100 text-yellow-800";
+  }
+};
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -109,9 +126,7 @@ export default function InvoicesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.customerId.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${
-                      invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${getStatusColor(invoice.status)}`}>
                       {invoice.status}
                     </span>
                   </td>
@@ -119,6 +134,15 @@ export default function InvoicesPage() {
                     {formatCurrency(invoice.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <InvoiceForm
+                      invoice={invoice}
+                      onSuccess={fetchInvoices}
+                      trigger={
+                        <Button variant="ghost" size="sm">
+                          <Edit2 className="h-4 w-4 mr-1" /> Edit
+                        </Button>
+                      }
+                    />
                     <Button variant="ghost" size="sm" onClick={() => generatePDF(invoice)}>
                       <Download className="h-4 w-4 mr-1" /> PDF
                     </Button>

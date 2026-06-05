@@ -22,6 +22,7 @@ const invoiceSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
   date: z.string(),
   dueDate: z.string(),
+  status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   isRecurring: z.boolean(),
   recurringInterval: z.enum(["weekly", "monthly", "yearly"]).optional(),
   items: z.array(z.object({
@@ -36,11 +37,14 @@ type InvoiceFormValues = z.infer<typeof invoiceSchema>;
 
 interface InvoiceFormProps {
   onSuccess: () => void;
+  invoice?: any;
+  trigger?: React.ReactNode;
 }
 
-export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
+export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
+  const isEditing = !!invoice;
 
   const {
     register,
@@ -52,12 +56,19 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     formState: { errors, isSubmitting }
   } = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceSchema),
-    defaultValues: {
+    defaultValues: invoice ? {
+      ...invoice,
+      customerId: invoice.customerId._id || invoice.customerId,
+      date: new Date(invoice.date).toISOString().split('T')[0],
+      dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
+      status: invoice.status || 'draft',
+    } : {
       invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
       items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
       isRecurring: false,
+      status: 'draft',
     }
   });
 
@@ -65,6 +76,18 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
     control,
     name: "items",
   });
+
+  useEffect(() => {
+    if (open && invoice) {
+      reset({
+        ...invoice,
+        customerId: invoice.customerId._id || invoice.customerId,
+        date: new Date(invoice.date).toISOString().split('T')[0],
+        dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
+        status: invoice.status || 'draft',
+      });
+    }
+  }, [open, invoice, reset]);
 
   useEffect(() => {
     fetch("/api/customers").then(res => res.json()).then(setCustomers);
@@ -86,45 +109,53 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
       const subtotal = data.items.reduce((acc: number, item: any) => acc + item.amount, 0);
       const total = subtotal; // Simplified
 
-      const res = await fetch("/api/invoices", {
-        method: "POST",
+      const url = isEditing ? `/api/invoices/${invoice._id}` : "/api/invoices";
+      const method = isEditing ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...data, subtotal, total }),
       });
 
       if (res.ok) {
-        reset();
+        if (!isEditing) reset();
         setOpen(false);
         onSuccess();
       }
     } catch (error) {
-      console.error("Failed to create invoice", error);
+      console.error(`Failed to ${isEditing ? "update" : "create"} invoice`, error);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> New Invoice
-        </Button>
+        {trigger || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> New Invoice
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Invoice</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Invoice" : "Create New Invoice"}</DialogTitle>
           <DialogDescription>
-            Generate a new invoice. Fill in the customer details and line items.
+            {isEditing
+              ? "Update the details of your invoice here. Click save when you're done."
+              : "Generate a new invoice. Fill in the customer details and line items."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Invoice Number</label>
-              <Input {...register("invoiceNumber")} />
+              <label htmlFor="invoiceNumber" className="text-sm font-medium">Invoice Number</label>
+              <Input id="invoiceNumber" {...register("invoiceNumber")} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Customer</label>
+              <label htmlFor="customerId" className="text-sm font-medium">Customer</label>
               <select
+                id="customerId"
                 {...register("customerId")}
                 className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
@@ -136,30 +167,46 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Date</label>
-              <Input {...register("date")} type="date" />
+              <label htmlFor="date" className="text-sm font-medium">Date</label>
+              <Input id="date" {...register("date")} type="date" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Due Date</label>
-              <Input {...register("dueDate")} type="date" />
+              <label htmlFor="dueDate" className="text-sm font-medium">Due Date</label>
+              <Input id="dueDate" {...register("dueDate")} type="date" />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" {...register("isRecurring")} id="isRecurring" />
-              <label htmlFor="isRecurring" className="text-sm font-medium">Recurring Invoice</label>
-            </div>
-            {watch("isRecurring") && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="status" className="text-sm font-medium">Status</label>
               <select
-                {...register("recurringInterval")}
-                className="mt-2 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                id="status"
+                {...register("status")}
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+                <option value="cancelled">Cancelled</option>
               </select>
-            )}
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 pt-8">
+                <input type="checkbox" {...register("isRecurring")} id="isRecurring" />
+                <label htmlFor="isRecurring" className="text-sm font-medium">Recurring Invoice</label>
+              </div>
+              {watch("isRecurring") && (
+                <select
+                  {...register("recurringInterval")}
+                  className="mt-2 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                >
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -195,7 +242,7 @@ export function InvoiceForm({ onSuccess }: InvoiceFormProps) {
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Invoice"}
+              {isSubmitting ? "Saving..." : isEditing ? "Save Changes" : "Create Invoice"}
             </Button>
           </div>
         </form>
