@@ -182,7 +182,7 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
               <div key={field.id} className="space-y-2 border-b pb-4 last:border-0">
                 <div className="grid grid-cols-12 gap-2">
                   <div className="col-span-7"><Input {...register(`items.${index}.description` as const)} placeholder="Description" /></div>
-                  <div className="col-span-3"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" placeholder="Amount" /></div>
+                  <div className="col-span-3"><Input {...register(`items.${index}.amount` as const, { valueAsNumber: true })} type="number" min="0" step="any" placeholder="Amount" /></div>
                   <div className="col-span-2 flex items-center space-x-1">
                     <div className="relative">
                       <input
