@@ -22,6 +22,7 @@ const proposalSchema = z.object({
   customerId: z.string().min(1, "Required"),
   title: z.string().min(1, "Required"),
   date: z.string(),
+  status: z.enum(['draft', 'sent', 'accepted', 'declined']),
   content: z.string().optional(),
   items: z.array(z.object({
     description: z.string().min(1, "Required"),
@@ -49,10 +50,12 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
       ...proposal,
       customerId: proposal.customerId._id || proposal.customerId,
       date: new Date(proposal.date).toISOString().split('T')[0],
+      status: proposal.status || 'draft',
     } : {
       proposalNumber: `PROP-${Date.now().toString().slice(-6)}`,
       date: new Date().toISOString().split('T')[0],
       items: [{ description: "", amount: 0, imageUrl: "" }],
+      status: 'draft',
     }
   });
 
@@ -64,6 +67,7 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
         ...proposal,
         customerId: proposal.customerId._id || proposal.customerId,
         date: new Date(proposal.date).toISOString().split('T')[0],
+        status: proposal.status || 'draft',
       });
     }
   }, [open, proposal, reset]);
@@ -144,20 +148,31 @@ export function ProposalForm({ onSuccess, proposal, trigger }: ProposalFormProps
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Proposal #</label>
-              <Input {...register("proposalNumber")} />
+              <label htmlFor="proposalNumber" className="text-sm font-medium">Proposal #</label>
+              <Input id="proposalNumber" {...register("proposalNumber")} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Customer</label>
-              <select {...register("customerId")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+              <label htmlFor="customerId" className="text-sm font-medium">Customer</label>
+              <select id="customerId" {...register("customerId")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
                 <option value="">Select Customer</option>
                 {Array.isArray(customers) && customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
             </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Title</label>
-            <Input {...register("title")} placeholder="Proposal for Web Development" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="title" className="text-sm font-medium">Title</label>
+              <Input id="title" {...register("title")} placeholder="Proposal for Web Development" />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="status" className="text-sm font-medium">Status</label>
+              <select id="status" {...register("status")} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
+              </select>
+            </div>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center text-sm font-semibold">
