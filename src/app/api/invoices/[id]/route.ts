@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Invoice from '@/models/Invoice';
+import '@/models/Customer';
 
 export async function GET(
   request: Request,
