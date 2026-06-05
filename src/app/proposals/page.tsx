@@ -5,6 +5,7 @@ import { Plus, Download, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import pptxgen from "pptxgenjs";
 import { ProposalForm } from "./ProposalForm";
+import { formatCurrency, formatCurrencyDoc } from "@/lib/utils";
 
 interface Proposal {
   _id: string;
@@ -54,7 +55,7 @@ export default function ProposalsPage() {
       for (const item of proposal.items) {
         const slide = pres.addSlide();
         slide.addText(item.description, { x: 0.5, y: 0.5, w: '90%', fontSize: 24, bold: true });
-        slide.addText(`Amount: $${item.amount.toFixed(2)}`, { x: 0.5, y: 1.2, w: '90%', fontSize: 18 });
+        slide.addText(`Amount: ${formatCurrencyDoc(item.amount)}`, { x: 0.5, y: 1.2, w: '90%', fontSize: 18 });
 
         if (item.imageUrl) {
           try {
@@ -80,7 +81,7 @@ export default function ProposalsPage() {
     // Summary Slide
     const summarySlide = pres.addSlide();
     summarySlide.addText("Summary", { x: 1, y: 1, fontSize: 28, bold: true });
-    summarySlide.addText(`Total Proposal Amount: $${proposal.total.toFixed(2)}`, { x: 1, y: 2, fontSize: 20 });
+    summarySlide.addText(`Total Proposal Amount: ${formatCurrencyDoc(proposal.total)}`, { x: 1, y: 2, fontSize: 20 });
 
     pres.writeFile({ fileName: `Proposal_${proposal.proposalNumber}.pptx` });
   };
@@ -117,7 +118,7 @@ export default function ProposalsPage() {
                 <td colSpan={6} className="px-6 py-10 text-center text-gray-500">No proposals found.</td>
               </tr>
             ) : (
-              proposals.map((proposal) => (
+              Array.isArray(proposals) && proposals.map((proposal) => (
                 <tr key={proposal._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{proposal.proposalNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{proposal.title}</td>
@@ -128,7 +129,7 @@ export default function ProposalsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
-                    ${proposal.total.toFixed(2)}
+                    {formatCurrency(proposal.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <ProposalForm
