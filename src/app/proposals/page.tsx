@@ -7,6 +7,21 @@ import pptxgen from "pptxgenjs";
 import { ProposalForm } from "./ProposalForm";
 import { formatCurrency, formatCurrencyDoc } from "@/lib/utils";
 
+const getStatusColor = (status: string) => {
+  switch ((status || "draft").toLowerCase()) {
+    case "draft":
+      return "bg-gray-100 text-gray-800";
+    case "sent":
+      return "bg-blue-100 text-blue-800";
+    case "accepted":
+      return "bg-green-100 text-green-800";
+    case "declined":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
 interface Proposal {
   _id: string;
   proposalNumber: string;
@@ -124,7 +139,7 @@ export default function ProposalsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{proposal.title}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{proposal.customerId.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 uppercase">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full uppercase ${getStatusColor(proposal.status)}`}>
                       {proposal.status}
                     </span>
                   </td>
