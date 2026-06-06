@@ -46,7 +46,7 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [proposals, setProposals] = useState<any[]>([]);
-  const isEditing = !!invoice;
+  const isEditing = !!(invoice && invoice._id);
 
   const {
     register,
@@ -60,9 +60,9 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
     resolver: zodResolver(invoiceSchema),
     defaultValues: invoice ? {
       ...invoice,
-      customerId: invoice.customerId._id || invoice.customerId,
-      date: new Date(invoice.date).toISOString().split('T')[0],
-      dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
+      customerId: invoice.customerId?._id || invoice.customerId,
+      date: invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
       status: invoice.status || 'draft',
       proposalId: invoice.proposalId?._id || invoice.proposalId,
     } : {
@@ -81,15 +81,28 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
   });
 
   useEffect(() => {
-    if (open && invoice) {
-      reset({
-        ...invoice,
-        customerId: invoice.customerId._id || invoice.customerId,
-        date: new Date(invoice.date).toISOString().split('T')[0],
-        dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
-        status: invoice.status || 'draft',
-        proposalId: invoice.proposalId?._id || invoice.proposalId,
-      });
+    if (open) {
+      if (invoice) {
+        reset({
+          ...invoice,
+          customerId: invoice.customerId?._id || invoice.customerId,
+          date: invoice.date ? new Date(invoice.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+          status: invoice.status || 'draft',
+          proposalId: invoice.proposalId?._id || invoice.proposalId,
+        });
+      } else {
+        reset({
+          invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+          date: new Date().toISOString().split('T')[0],
+          dueDate: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+          items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
+          isRecurring: false,
+          status: 'draft',
+          proposalId: "",
+        });
+      }
+      setLastSelectedProposalId(invoice?.proposalId?._id || invoice?.proposalId);
     }
   }, [open, invoice, reset]);
 
@@ -98,24 +111,40 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
     fetch("/api/proposals").then(res => res.json()).then(setProposals);
   }, []);
 
-  const selectedCustomerId = watch("customerId");
-  const filteredProposals = proposals.filter(p => p.customerId?._id === selectedCustomerId || p.customerId === selectedCustomerId);
-
   const selectedProposalId = watch("proposalId");
+  const [lastSelectedProposalId, setLastSelectedProposalId] = useState<string | undefined>(
+    invoice?.proposalId?._id || invoice?.proposalId
+  );
+
   useEffect(() => {
-    if (selectedProposalId && !isEditing) {
-      const proposal = proposals.find(p => p._id === selectedProposalId);
-      if (proposal && proposal.items) {
-        const newItems = proposal.items.map((item: any) => ({
-          description: item.description,
-          quantity: 1,
-          rate: item.amount,
-          amount: item.amount
-        }));
-        setValue("items", newItems);
+    if (!Array.isArray(proposals)) return;
+
+    if (selectedProposalId) {
+      if (selectedProposalId !== lastSelectedProposalId) {
+        const proposal = proposals.find(p => p._id === selectedProposalId);
+        if (proposal) {
+          // Autopopulate customer
+          if (proposal.customerId) {
+            const cId = (proposal.customerId && typeof proposal.customerId === 'object') ? proposal.customerId._id : proposal.customerId;
+            setValue("customerId", cId);
+          }
+          // Autopopulate items
+          if (proposal.items && Array.isArray(proposal.items)) {
+            const newItems = proposal.items.map((item: any) => ({
+              description: item.description,
+              quantity: 1,
+              rate: item.amount,
+              amount: item.amount
+            }));
+            setValue("items", newItems);
+          }
+          setLastSelectedProposalId(selectedProposalId);
+        }
       }
+    } else {
+      setLastSelectedProposalId("");
     }
-  }, [selectedProposalId, proposals, isEditing, setValue]);
+  }, [selectedProposalId, proposals, setValue, lastSelectedProposalId]);
 
   const items = watch("items");
 
@@ -207,7 +236,7 @@ export function InvoiceForm({ onSuccess, invoice, trigger }: InvoiceFormProps) {
                 className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">None</option>
-                {Array.isArray(filteredProposals) && filteredProposals.map(p => (
+                {Array.isArray(proposals) && proposals.map(p => (
                   <option key={p._id} value={p._id}>{p.proposalNumber} - {p.title}</option>
                 ))}
               </select>
