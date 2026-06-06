@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import jsPDF from "jspdf";
+import { PaymentForm } from "./PaymentForm";
 import { formatCurrency, formatCurrencyDoc } from "@/lib/utils";
 
 interface Payment {
@@ -64,9 +65,7 @@ export default function PaymentsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Payments Received</h1>
           <p className="text-gray-500">View and record customer payments.</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Record Payment
-        </Button>
+        <PaymentForm onSuccess={fetchPayments} />
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
