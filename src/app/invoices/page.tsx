@@ -18,6 +18,7 @@ interface Invoice {
   dueDate: string;
   isRecurring: boolean;
   items: any[];
+  proposalId?: { _id: string; proposalNumber: string };
 }
 
 const getStatusColor = (status: string) => {
@@ -98,6 +99,7 @@ export default function InvoicesPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proposal</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -120,6 +122,9 @@ export default function InvoicesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                     {invoice.invoiceNumber}
                     {invoice.isRecurring && <RefreshCw className="ml-2 h-3 w-3 text-blue-500" />}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {invoice.proposalId?.proposalNumber || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(invoice.date).toLocaleDateString()}

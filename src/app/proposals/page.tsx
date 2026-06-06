@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Download, Edit2 } from "lucide-react";
+import { Plus, Download, Edit2, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import pptxgen from "pptxgenjs";
 import { ProposalForm } from "./ProposalForm";
+import { InvoiceForm } from "../invoices/InvoiceForm";
 import { formatCurrency, formatCurrencyDoc } from "@/lib/utils";
 
 const getStatusColor = (status: string) => {
@@ -159,6 +160,31 @@ export default function ProposalsPage() {
                     <Button variant="ghost" size="sm" onClick={() => generatePPTX(proposal)}>
                       <Download className="h-4 w-4 mr-1" /> PPTX
                     </Button>
+                    {proposal.status.toLowerCase() === 'accepted' && (
+                      <InvoiceForm
+                        onSuccess={() => {}}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            <ReceiptText className="h-4 w-4 mr-1" /> Invoice
+                          </Button>
+                        }
+                        invoice={{
+                          customerId: proposal.customerId._id,
+                          proposalId: proposal._id,
+                          items: proposal.items?.map(item => ({
+                            description: item.description,
+                            quantity: 1,
+                            rate: item.amount,
+                            amount: item.amount
+                          })) || [],
+                          invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+                          date: new Date(),
+                          dueDate: new Date(Date.now() + 30*24*60*60*1000),
+                          status: 'draft',
+                          isRecurring: false
+                        }}
+                      />
+                    )}
                   </td>
                 </tr>
               ))
