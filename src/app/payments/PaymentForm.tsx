@@ -67,7 +67,10 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
   const filteredInvoices = Array.isArray(invoices)
     ? invoices.filter(inv => {
         const invCustId = inv.customerId?._id || inv.customerId;
-        return invCustId === selectedCustomerId && inv.status !== 'paid';
+        if (selectedCustomerId) {
+          return invCustId === selectedCustomerId && inv.status !== 'paid';
+        }
+        return inv.status !== 'paid';
       })
     : [];
 
@@ -77,9 +80,13 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
       const invoice = invoices.find(inv => inv._id === selectedInvoiceId);
       if (invoice) {
         setValue("amount", invoice.total.toString());
+        const invCustId = invoice.customerId?._id || invoice.customerId;
+        if (invCustId && invCustId !== selectedCustomerId) {
+          setValue("customerId", invCustId);
+        }
       }
     }
-  }, [selectedInvoiceId, invoices, setValue]);
+  }, [selectedInvoiceId, invoices, setValue, selectedCustomerId]);
 
   const onSubmit = async (values: PaymentFormValues) => {
     setSubmitError(null);
@@ -156,13 +163,12 @@ export function PaymentForm({ onSuccess }: PaymentFormProps) {
             <select
               id="invoiceId"
               {...register("invoiceId")}
-              disabled={!selectedCustomerId}
               className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
             >
               <option value="">Select an invoice</option>
               {filteredInvoices.map(inv => (
                 <option key={inv._id} value={inv._id}>
-                  {inv.invoiceNumber} - total: {inv.total}
+                  {inv.invoiceNumber} - {inv.customerId?.name || 'Unknown'} - {inv.total}
                 </option>
               ))}
             </select>
