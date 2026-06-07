@@ -7,10 +7,16 @@ import Proposal from '@/models/Proposal';
 export async function GET() {
   try {
     await dbConnect();
+
+    // Ensure models are registered for population
+    const _models = { Customer, Proposal };
+
     const invoices = await Invoice.find({})
       .populate('customerId', 'name')
       .populate('proposalId', 'proposalNumber')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
     return NextResponse.json(invoices);
   } catch (error: any) {
     console.error('Error fetching invoices:', error);

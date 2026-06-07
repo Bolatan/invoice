@@ -11,9 +11,14 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await params;
+
+    // Ensure models are registered for population
+    const _models = { Customer, Proposal };
+
     const invoice = await Invoice.findById(id)
       .populate('customerId', 'name')
-      .populate('proposalId', 'proposalNumber');
+      .populate('proposalId', 'proposalNumber')
+      .lean();
     if (!invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }

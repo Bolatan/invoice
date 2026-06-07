@@ -6,7 +6,10 @@ import Customer from '@/models/Customer';
 export async function GET() {
   try {
     await dbConnect();
-    const proposals = await Proposal.find({}).populate('customerId', 'name').sort({ createdAt: -1 });
+    const proposals = await Proposal.find({})
+      .populate('customerId', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
     return NextResponse.json(proposals);
   } catch (error: any) {
     console.error('Error fetching proposals:', error);

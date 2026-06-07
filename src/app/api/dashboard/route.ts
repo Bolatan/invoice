@@ -29,7 +29,8 @@ export async function GET() {
     const recentInvoices = await Invoice.find({})
       .populate('customerId', 'name')
       .sort({ createdAt: -1 })
-      .limit(5);
+      .limit(5)
+      .lean();
 
     // Monthly revenue for chart
     const sixMonthsAgo = new Date();
