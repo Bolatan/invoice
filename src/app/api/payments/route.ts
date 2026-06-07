@@ -7,7 +7,10 @@ import Customer from '@/models/Customer';
 export async function GET() {
   try {
     await dbConnect();
-    const payments = await Payment.find({}).populate('customerId', 'name').sort({ date: -1 });
+    const payments = await Payment.find({})
+      .populate('customerId', 'name')
+      .sort({ date: -1 })
+      .lean();
     return NextResponse.json(payments);
   } catch (error: any) {
     console.error('Error fetching payments:', error);

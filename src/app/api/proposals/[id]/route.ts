@@ -10,7 +10,9 @@ export async function GET(
   try {
     await dbConnect();
     const { id } = await params;
-    const proposal = await Proposal.findById(id).populate('customerId', 'name');
+    const proposal = await Proposal.findById(id)
+      .populate('customerId', 'name')
+      .lean();
     if (!proposal) {
       return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
     }
